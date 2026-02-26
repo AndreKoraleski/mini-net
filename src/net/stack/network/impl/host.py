@@ -1,5 +1,8 @@
 """Implementação da camada de rede para hosts finais."""
 
+from __future__ import annotations
+
+
 import logging
 from typing import cast
 

@@ -1,5 +1,8 @@
 """Cliente de chat - conecta ao servidor e troca mensagens."""
 
+from __future__ import annotations
+
+
 import argparse
 import logging
 import sys

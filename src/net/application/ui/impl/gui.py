@@ -6,6 +6,9 @@ por meio de `queue.Queue` e `threading.Event`, sem acesso direto a widgets
 fora da thread Tk.
 """
 
+from __future__ import annotations
+
+
 import contextlib
 import queue
 import threading

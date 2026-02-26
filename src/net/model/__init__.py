@@ -1,5 +1,8 @@
 """Modulo contendo tipos de dados que servem como modelos para o projeto."""
 
+from __future__ import annotations
+
+
 from .address import (
     Address,
     IPAddress,

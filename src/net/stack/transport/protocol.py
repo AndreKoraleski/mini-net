@@ -1,5 +1,8 @@
 """Interfaces para a camada de transporte."""
 
+from __future__ import annotations
+
+
 from typing import Protocol, runtime_checkable
 
 from net.model import VirtualAddress

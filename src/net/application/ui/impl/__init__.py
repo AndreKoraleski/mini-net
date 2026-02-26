@@ -1,5 +1,8 @@
 """Implementações de UI para o cliente de chat."""
 
+from __future__ import annotations
+
+
 from .console import ConsoleUI
 from .gui import GUI
 

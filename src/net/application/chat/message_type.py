@@ -1,5 +1,8 @@
 """Enumeração dos tipos de mensagem do protocolo de chat."""
 
+from __future__ import annotations
+
+
 from enum import StrEnum
 
 

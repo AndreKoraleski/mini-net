@@ -1,5 +1,8 @@
 """Módulo do roteador de rede."""
 
+from __future__ import annotations
+
+
 import logging
 
 from net.logging import setup_logging

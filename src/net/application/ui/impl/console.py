@@ -1,5 +1,8 @@
 """Implementação da UI de chat em console (stdin / stdout)."""
 
+from __future__ import annotations
+
+
 import threading
 from datetime import datetime
 from pathlib import Path

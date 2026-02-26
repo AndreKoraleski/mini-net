@@ -1,5 +1,8 @@
 """Implementação da camada de rede para roteadores."""
 
+from __future__ import annotations
+
+
 import dataclasses
 import logging
 

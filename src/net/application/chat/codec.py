@@ -1,13 +1,17 @@
 """Dispatcher de desserialização do protocolo de chat."""
 
+from __future__ import annotations
+
+
 import json
+from typing import Union
 
 from net.application.chat.file import FileMessage
 from net.application.chat.message_type import MessageType
 from net.application.chat.system import SystemMessage
 from net.application.chat.text import TextMessage
 
-type Message = TextMessage | FileMessage | SystemMessage
+Message = Union[TextMessage, FileMessage, SystemMessage]
 
 
 def decode(raw: bytes) -> Message:

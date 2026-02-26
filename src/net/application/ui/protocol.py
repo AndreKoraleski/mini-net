@@ -1,5 +1,8 @@
 """Protocolo de UI para o cliente de chat."""
 
+from __future__ import annotations
+
+
 from datetime import datetime
 from pathlib import Path
 from typing import Protocol

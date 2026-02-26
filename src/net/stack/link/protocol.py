@@ -1,5 +1,8 @@
 """Interface para a camada de enlace."""
 
+from __future__ import annotations
+
+
 from typing import Protocol, runtime_checkable
 
 from net.base import Packet

@@ -1,5 +1,8 @@
 """Interface de protocolo de rede."""
 
+from __future__ import annotations
+
+
 from typing import Protocol, runtime_checkable
 
 from net.base import Segment

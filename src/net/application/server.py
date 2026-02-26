@@ -1,5 +1,8 @@
 """Servidor de chat - aceita conexões de Alice e Bob e retransmite mensagens."""
 
+from __future__ import annotations
+
+
 import contextlib
 import logging
 import threading

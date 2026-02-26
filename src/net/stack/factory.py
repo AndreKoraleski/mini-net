@@ -4,6 +4,9 @@ Utiliza Address para definir como alvo da camada física simulada e VirtualAddre
 a camada de transporte.
 """
 
+from __future__ import annotations
+
+
 import socket
 from pathlib import Path
 

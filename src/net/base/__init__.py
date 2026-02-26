@@ -5,6 +5,9 @@ e deve ser obrigatoriamente utilizado pelas partes do projeto para montar o stac
 protocolos.
 """
 
+from __future__ import annotations
+
+
 from .protocol import Pacote as Packet
 from .protocol import Quadro as Frame
 from .protocol import Segmento as Segment

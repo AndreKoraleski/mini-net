@@ -1,5 +1,8 @@
 """Camada de aplicação de chat."""
 
+from __future__ import annotations
+
+
 from .codec import Message, decode
 from .file import FileMessage
 from .message_type import MessageType

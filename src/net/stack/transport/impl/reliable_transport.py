@@ -1,5 +1,8 @@
 """Implementação do multiplexador de transporte confiável."""
 
+from __future__ import annotations
+
+
 import logging
 import queue
 import threading
@@ -13,7 +16,7 @@ from net.stack.transport.impl.reliable_connection import ReliableConnection
 
 logger = logging.getLogger(__name__)
 
-type ConnectionKey = tuple[VirtualIPAddress, Port, Port]
+ConnectionKey = tuple[VirtualIPAddress, Port, Port]
 
 
 class ReliableTransport(Transport):

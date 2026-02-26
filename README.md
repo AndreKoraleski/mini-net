@@ -1,13 +1,27 @@
 # A Mini Net
 
+![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![LICENSE](https://img.shields.io/badge/licen%C3%A7a-MIT-22c55e)
+![INF-UFG](https://img.shields.io/badge/INF--UFG-Redes%202025%2F4-f97316)
+
 Projeto integrador da disciplina de **Redes de Computadores – INF-UFG 2025/4**.
 
-O produto final é uma aplicação de **chat** que funciona sobre esse canal
-defeituoso.
+**Autores:** Andre Koraleski &amp; Henrick Souza
+
+O produto final é uma aplicação de **chat** que funciona sobre um canal
+propositalmente defeituoso (perda de pacotes, corrupção de bits, latência
+variável), implementando do zero todas as garantias que normalmente delegaríamos
+ao TCP.
+
+O Manual do Projeto indica quatro fases, começando pela aplicação e terminando na camada de enlace. 
+
+No entanto, como a estrutura é a de uma pilha, nós preferimos ir pelo exato contrário, começando pela base que todos acima dependem e então encapsulando. Isso pode ser visto no histórico de *commits* do projeto.
+
+Esta é a terceira e derradeira versão do repositório, com uma estrutura mais intuitiva, maneira mais simples de se executar e uma narrativa embutida em seus metadados enquanto (tentando) esconder grande parte do processo sujo de desenvolvimento rápido realizado por nós dois em um repositório privado.
 
 ```
 ┌─────────────┐
-│  Aplicação  │  <- Último Implementado
+│  Aplicação  │  <- Quinto Implementado
 ├─────────────┤
 │  Transporte │  <- Quarto Implementado
 ├─────────────┤
@@ -51,27 +65,63 @@ Roteador como único vizinho via ARP. O Roteador conhece todos diretamente.
 
 ## Código fornecido pelo professor
 
-O módulo `net.base` (`src/net/base/protocol.py`) é fornecido pronto e não deve
+O módulo [`net.base.protocol`](src/net/base/protocol.py) é fornecido pronto e não deve
 ser modificado. Ele define as três PDUs da pilha — `Segmento`, `Pacote` e
 `Quadro` — bem como a função `enviar_pela_rede_ruidosa`, que injeta perda,
 corrupção de bits e latência variável antes de chamar `sock.sendto`. Todo o
 resto do projeto consome essas abstrações mas não as reimplementa.
 
+## Estrutura do Código
+
+```
+src/net/
+├── base/
+│   └── protocol.py *            <- PDUs (Segmento, Pacote, Quadro) + enviar_pela_rede_ruidosa
+├── model/
+│   └── address.py               <- Port, IPAddress, VirtualIPAddress, MACAddress
+├── stack/
+│   ├── factory.py               <- build_*_layer(), tabelas ARP/MAC/roteamento
+│   ├── physical/
+│   │   ├── protocol.py
+│   │   └── impl/udp_simulated.py
+│   ├── link/
+│   │   ├── protocol.py
+│   │   └── impl/simple.py
+│   ├── network/
+│   │   ├── protocol.py
+│   │   └── impl/  host.py · router.py
+│   └── transport/
+│       ├── protocol.py
+│       └── impl/  reliable_connection.py · reliable_transport.py
+└── application/
+    ├── client.py · server.py · router.py
+    ├── chat/  codec.py · text.py · file.py · system.py
+    └── ui/  protocol.py · impl/  console.py · gui.py
+
+* Fornecido pelo professor — não modificado.
+```
+
 ## Ordem de Desenvolvimento
 
-### 1 — Endereços
+### 0 — Endereços
+
+[`model/address.py`](src/net/model/address.py)
 
 Classes que padronizam e validam os tipos de endereço usados em toda a pilha:
 `Port`, `IPAddress`, `VirtualIPAddress`, `MACAddress`, `Address` e `VirtualAddress`.
 
-### 2 — Camada Física · `UDPSimulated`
+### 1 — Camada Física · `UDPSimulated`
+
+[`physical/protocol.py`](src/net/stack/physical/protocol.py) · [`physical/impl/udp_simulated.py`](src/net/stack/physical/impl/udp_simulated.py)
 
 `UDPSimulated` abre um socket UDP, usa `enviar_pela_rede_ruidosa` (professor)
 para enviar e `sock.recvfrom` para receber, resolvendo o MAC de destino numa
 tabela estática para obter o endereço UDP real. `build_physical_layer(name)`
 cria o socket e faz `bind` antes de retornar.
 
-### 3 — Camada de Enlace · `SimpleLink`
+### 2 — Camada de Enlace · `SimpleLink`
+
+[`link/protocol.py`](src/net/stack/link/protocol.py) · [`link/impl/simple.py`](src/net/stack/link/impl/simple.py)
 
 `SimpleLink` encapsula pacotes em `Frame` (professor), delega o envio à camada
 física e, na recepção, verifica a integridade via CRC (professor). A resolução
@@ -79,7 +129,9 @@ de endereços físicos é feita por tabela ARP estática: Alice, Bob e Servidor
 apontam apenas para o Roteador. O Roteador conhece todos.
 `build_link_layer(name)` compõe a camada física internamente.
 
-### 4 — Camada de Rede · `HostNetwork` / `RouterNetwork`
+### 3 — Camada de Rede · `HostNetwork` / `RouterNetwork`
+
+[`network/protocol.py`](src/net/stack/network/protocol.py) · [`network/impl/host.py`](src/net/stack/network/impl/host.py) · [`network/impl/router.py`](src/net/stack/network/impl/router.py)
 
 - **`HostNetwork`** — hosts comuns. `send()` consulta a tabela de roteamento e
   delega ao enlace. `receive()` bloqueia até um pacote endereçado ao VIP local
@@ -91,7 +143,9 @@ apontam apenas para o Roteador. O Roteador conhece todos.
 `build_network_layer(name)` escolhe a implementação correta e compõe as camadas
 inferiores.
 
-### 5 — Camada de Transporte · `ReliableConnection` / `ReliableTransport`
+### 4 — Camada de Transporte · `ReliableConnection` / `ReliableTransport`
+
+[`transport/protocol.py`](src/net/stack/transport/protocol.py) · [`transport/impl/reliable_connection.py`](src/net/stack/transport/impl/reliable_connection.py) · [`transport/impl/reliable_transport.py`](src/net/stack/transport/impl/reliable_transport.py)
 
 - **`ReliableConnection`** — Stop-and-Wait para um par de endereços. `send()`
   fragmenta em chunks de MSS e retransmite até receber ACK. `receive()`
@@ -106,7 +160,9 @@ inferiores.
 `build_transport_layer(name)` monta a pilha completa e retorna o transport já
 ativo. Não aceita o roteador.
 
-### 6 — Camada de Aplicação · `Server` / `Client`
+### 5 — Camada de Aplicação · `Server` / `Client`
+
+[`application/server.py`](src/net/application/server.py) · [`application/client.py`](src/net/application/client.py) · [`application/router.py`](src/net/application/router.py) · [`application/chat/`](src/net/application/chat) · [`application/ui/`](src/net/application/ui)
 
 - **`Server`** — servidor centralizado que aceita conexões de clientes,
   gerencia a lista de usuários online e retransmite mensagens entre pares. Ao
@@ -123,11 +179,6 @@ ativo. Não aceita o roteador.
     barra de status.
 
   A seleção da UI é automática: sem TTY ou com `--gui`, usa a GUI.
-
-- **`PrioritySender`** — elimina HOL blocking causado por transferências de
-  arquivo. Envolve uma `Connection` e despacha de uma `PriorityQueue` em thread
-  separada. Mensagens de sistema (prioridade 0) e texto (1) ultrapassam arquivos
-  (2) na fila, mantendo o chat responsivo durante uploads.
 
 **Protocolo de mensagens (JSON):**
 

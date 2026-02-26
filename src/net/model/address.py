@@ -1,5 +1,8 @@
 """Módulo para representar endereços IP, MAC e de Portas."""
 
+from __future__ import annotations
+
+
 from re import compile
 from typing import Self
 

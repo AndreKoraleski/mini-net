@@ -1,5 +1,8 @@
 """Configuração de logging colorido para o terminal."""
 
+from __future__ import annotations
+
+
 import logging
 
 # Códigos ANSI básicos
