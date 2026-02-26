@@ -44,7 +44,7 @@ class IPAddress(str):
         return True
 
 
-class VIPAddress(str):
+class VirtualIPAddress(str):
     """Representa um Endereço VIP sem validação específica."""
 
     def __new__(cls, value: str) -> Self:
@@ -134,7 +134,7 @@ class Address(tuple[IPAddress, Port]):
         return self[1]
 
 
-class VAdress(tuple[VIPAddress, Port]):
+class VirtualAddress(tuple[VirtualIPAddress, Port]):
     """Representa um endereço VIP composto por um VIP e uma Porta."""
 
     def __new__(cls, vip: str, port: int) -> Self:
@@ -145,19 +145,19 @@ class VAdress(tuple[VIPAddress, Port]):
             port (int): O número da porta a ser validado.
 
         Returns:
-            Self: Uma instância de VAdress se o VIP e a Porta forem válidos.
+            Self: Uma instância de VirtualAddress se o VIP e a Porta forem válidos.
 
         Raises:
             ValueError: Se o VIP ou a Porta forem inválidos.
         """
-        return super().__new__(cls, (VIPAddress(vip), Port(port)))
+        return super().__new__(cls, (VirtualIPAddress(vip), Port(port)))
 
     @property
-    def vip(self) -> VIPAddress:
-        """Retorna o endereço VIP do VAdress."""
+    def vip(self) -> VirtualIPAddress:
+        """Retorna o endereço VIP do VirtualAddress."""
         return self[0]
 
     @property
     def port(self) -> Port:
-        """Retorna o número da porta do VAdress."""
+        """Retorna o número da porta do VirtualAddress."""
         return self[1]
