@@ -1,7 +1,7 @@
 """Fábrica da pilha de rede.
 
-Utiliza Address para definir como alvo da camada física simulada e VAddress para a
-camada de transporte.
+Utiliza Address para definir como alvo da camada física simulada e VirtualAddress para
+a camada de transporte.
 """
 
 import socket
@@ -14,6 +14,7 @@ from net.model.address import (
     VirtualAddress,
     VirtualIPAddress,
 )
+from net.stack.link.impl import SimpleLink
 from net.stack.physical.impl import UDPSimulated
 
 # --- Client A(lice) ---
@@ -53,21 +54,54 @@ ROUTER_ADDRESS = Address(ROUTER_IP, ROUTER_PORT)
 ROUTER_VADDRESS = VirtualAddress(ROUTER_VIP, ROUTER_PORT)
 
 # --- Tabela de mapeamento MAC -> Address (IP + Port) para a camada física simulada ---
-MAC_TABLE = {
+MAC_TABLE: dict[MACAddress, Address] = {
     CLIENT_A_MAC: CLIENT_A_ADDRESS,
     CLIENT_B_MAC: CLIENT_B_ADDRESS,
     SERVER_MAC: SERVER_ADDRESS,
     ROUTER_MAC: ROUTER_ADDRESS,
 }
 
-
-# --- Registro de hosts Nome -> (MAC, Address físico, VirtualAddress) ---
-HOST_REGISTRY: dict[str, tuple[MACAddress, Address, VirtualAddress]] = {
-    CLIENT_A_NAME: (CLIENT_A_MAC, CLIENT_A_ADDRESS, CLIENT_A_VADDRESS),
-    CLIENT_B_NAME: (CLIENT_B_MAC, CLIENT_B_ADDRESS, CLIENT_B_VADDRESS),
-    SERVER_NAME: (SERVER_MAC, SERVER_ADDRESS, SERVER_VADDRESS),
-    ROUTER_NAME: (ROUTER_MAC, ROUTER_ADDRESS, ROUTER_VADDRESS),
+# --- Tabelas ARP (VIP -> MAC) para a camada de enlace ---
+# Alice, Bob e Servidor só enxergam o Roteador como próximo salto.
+_ARP_TABLE_HOSTS: dict[VirtualIPAddress, MACAddress] = {
+    ROUTER_VIP: ROUTER_MAC,
 }
+
+# O Roteador enxerga todos os hosts diretamente.
+_ARP_TABLE_ROUTER: dict[VirtualIPAddress, MACAddress] = {
+    CLIENT_A_VIP: CLIENT_A_MAC,
+    CLIENT_B_VIP: CLIENT_B_MAC,
+    SERVER_VIP: SERVER_MAC,
+}
+
+# --- Registro de hosts Nome -> (MAC, Address físico, VirtualAddress, tabela ARP) ---
+HOST_REGISTRY: dict[
+    str, tuple[MACAddress, Address, VirtualAddress, dict[VirtualIPAddress, MACAddress]]
+] = {
+    CLIENT_A_NAME: (
+        CLIENT_A_MAC,
+        CLIENT_A_ADDRESS,
+        CLIENT_A_VADDRESS,
+        _ARP_TABLE_HOSTS,
+    ),
+    CLIENT_B_NAME: (
+        CLIENT_B_MAC,
+        CLIENT_B_ADDRESS,
+        CLIENT_B_VADDRESS,
+        _ARP_TABLE_HOSTS,
+    ),
+    SERVER_NAME: (SERVER_MAC, SERVER_ADDRESS, SERVER_VADDRESS, _ARP_TABLE_HOSTS),
+    ROUTER_NAME: (ROUTER_MAC, ROUTER_ADDRESS, ROUTER_VADDRESS, _ARP_TABLE_ROUTER),
+}
+
+
+def _get_host(
+    name: str,
+) -> tuple[MACAddress, Address, VirtualAddress, dict[VirtualIPAddress, MACAddress]]:
+    if name not in HOST_REGISTRY:
+        available = list(HOST_REGISTRY)
+        raise KeyError(f"Host desconhecido: {name!r}. Disponíveis: {available}")
+    return HOST_REGISTRY[name]
 
 
 def build_physical_layer(name: str) -> UDPSimulated:
@@ -78,6 +112,7 @@ def build_physical_layer(name: str) -> UDPSimulated:
 
     Args:
         name (str): Nome do host conforme definido neste módulo
+            (ex.: `CLIENT_A_NAME`, `SERVER_NAME`).
 
     Returns:
         UDPSimulated: Camada física com socket já vinculado.
@@ -85,11 +120,29 @@ def build_physical_layer(name: str) -> UDPSimulated:
     Raises:
         KeyError: Se `name` não existir no registro de hosts.
     """
-    if name not in HOST_REGISTRY:
-        available = list(HOST_REGISTRY)
-        raise KeyError(f"Host desconhecido: {name!r}. Disponíveis: {available}")
-
-    _, address, _ = HOST_REGISTRY[name]
+    _, address, _, _ = _get_host(name)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((str(address.ip), int(address.port)))
     return UDPSimulated(sock, MAC_TABLE)
+
+
+def build_link_layer(name: str) -> SimpleLink:
+    """Cria a camada de enlace completa para o host informado.
+
+    Cria a camada física subjacente (com socket vinculado) e devolve
+    um SimpleLink configurado com o MAC local e a tabela ARP
+    correspondente ao host.
+
+    Args:
+        name (str): Nome do host conforme definido neste módulo
+            (ex.: `CLIENT_A_NAME`, `ROUTER_NAME`).
+
+    Returns:
+        SimpleLink: Camada de enlace pronta para uso.
+
+    Raises:
+        KeyError: Se `name` não existir no registro de hosts.
+    """
+    mac, _, _, arp_table = _get_host(name)
+    physical = build_physical_layer(name)
+    return SimpleLink(physical, mac, arp_table)

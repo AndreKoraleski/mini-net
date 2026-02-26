@@ -7,3 +7,4 @@
 
 1. Adicionadas classes para padronizar e validar os endereços de `Porta`, `IP`, `VIP`, `MAC`, etc.
 2. Implementada a **Camada Física** (`UDPSimulated`) sobre UDP real, com simulação de perda, corrupção de bits e latência variável, todos fornecidos. A fábrica (`factory.py`) expõe `build_physical_layer(name)` para montar a camada com socket já vinculado.
+3. Implementada a **Camada de Enlace** (`SimpleLink`) com encapsulamento em `Frame`, verificação de integridade via CRC e resolução de endereços por tabela ARP estática. Alice, Bob e Servidor enxergam apenas o Roteador. O Roteador enxerga todos. A fábrica expõe `build_link_layer(name)` que compõe a camada física internamente.
