@@ -19,6 +19,8 @@ No entanto, como a estrutura é a de uma pilha, nós preferimos ir pelo exato co
 
 Esta é a terceira e derradeira versão do repositório, com uma estrutura mais intuitiva, maneira mais simples de se executar e uma narrativa embutida em seus metadados enquanto (tentando) esconder grande parte do processo sujo de desenvolvimento rápido realizado por nós dois em um repositório privado.
 
+Apagar em uma semana, lembrar:
+[Vídeo de Demonstração](https://youtu.be/eSTI6D1iMlU)
 ```
 ┌─────────────┐
 │  Aplicação  │  <- Quinto Implementado
